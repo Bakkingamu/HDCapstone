@@ -27,4 +27,3 @@ public class main {
 //Hi everyone ~Tim
 
 //Cori Test Comment 09/14/2017
-//Eric Test
