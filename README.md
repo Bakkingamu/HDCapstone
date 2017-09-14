@@ -1,3 +1,3 @@
 # HDCapstone
 
-We're doing a thing and it is totes professional.
+This is our senior project GitHub, where we are developing a Home Depot Mobile Device Document Audit System.
