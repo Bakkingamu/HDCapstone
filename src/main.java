@@ -3,6 +3,7 @@
  */
 import com.google.auth.Credentials;
 //log entries
+import org.apache.pdfbox.pdmodel.PDDocumentInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.awt.image.BufferedImage;
@@ -37,52 +38,23 @@ import java.util.List;
 
 public class main {
     public static void main(String[] args) throws Exception{
-
-        //Rasterize pdf into image
-        //https://stackoverflow.com/questions/23326562/
-        PDDocument document = PDDocument.load(new File("HELLO.pdf"));
-        PDFRenderer pdfRenderer = new PDFRenderer(document);
-        BufferedImage bim = pdfRenderer.renderImageWithDPI(0,300, ImageType.RGB);
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-
-        //format image data as png
-        ImageIO.write(bim,"png",os);
-
-        //prepare package for google vision
-        //https://cloud.google.com/vision/docs/reference/libraries#client-libraries-install-java
-        ByteString imageByteString = ByteString.copyFrom(os.toByteArray());
-        try(ImageAnnotatorClient vision = ImageAnnotatorClient.create()) {
-            List<AnnotateImageRequest> requests = new ArrayList<>();
-            Image img = Image.newBuilder().setContent(imageByteString).build();
-            Feature feat = Feature.newBuilder().setType(Type.TEXT_DETECTION).build();
-            AnnotateImageRequest request = AnnotateImageRequest.newBuilder().addFeatures(feat).setImage(img).build();
-            requests.add(request);
-
-            //send request to vision
-            BatchAnnotateImagesResponse response = vision.batchAnnotateImages(requests);
-            List<AnnotateImageResponse> responses = response.getResponsesList();
-
-            //print out response
-            for (AnnotateImageResponse res : responses) {
-                for (EntityAnnotation annotation : res.getTextAnnotationsList()) {
-                    annotation.getAllFields().forEach((k, v) ->
-                            System.out.printf("%s : %s\n", k, v.toString()));
-                }
-            }
-        }
+        PDFOperator op = new PDFOperator(PDDocument.load(new File("Complete HIA.pdf")));
+        VisionPackage vp = new VisionPackage(VisionPackage.createImageUsingBufImage(op.renderImage()), Type.LABEL_DETECTION);
+        vp.TestPrint();
+        /*
         //Post to log entries
         Logger logger = LoggerFactory.getLogger("LE");
-        //logger.debug("Hello world.");
+        logger.debug("Hello world.");
 
         // print internal state
-        /*
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
         StatusPrinter.print(lc);
-        */
+
 
         //pause system
         Scanner reader = new Scanner(System.in);  // Reading from System.in
         System.out.println("Pausing");
         int n = reader.nextInt();
+        */
     }
 }
