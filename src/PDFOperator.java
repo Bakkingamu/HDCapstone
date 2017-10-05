@@ -31,6 +31,9 @@ public class PDFOperator {
         }
     return bim;
     }
+    public boolean producerMatch(String producer){
+        return getInfo().getProducer().equals(producer);
+    }
     //some getters
     public PDDocument getDocument(){
         return document;
