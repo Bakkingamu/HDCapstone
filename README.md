@@ -1,6 +1,6 @@
 # HDCapstone
 This is our senior project project page, where we are developing a Home Depot Mobile Device Document Audit System.
-#Requirements:
+# Requirements:
 ch.qos.logback:logback-classic:0.9.30
 com.google.cloud:google-cloud-vision:0.23.1-beta
 com.levigo.jbig2:levigo-jbig2-imageio:2.0
