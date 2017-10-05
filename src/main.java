@@ -81,7 +81,7 @@ public class main {
 
             //check which input method
             INPUT inputMethod;
-            String path = "";
+            String path;
             if(cmd.hasOption("i"))
             {
                 inputMethod = INPUT.FILE;
@@ -109,6 +109,7 @@ public class main {
             printHelp(options);
             System.exit(1);
         }
+
         /*
         PDFOperator op = new PDFOperator(PDDocument.load(new File("Complete HIA.pdf")));
         VisionPackage vp = new VisionPackage(VisionPackage.createImageUsingBufImage(op.renderImage()), Type.LABEL_DETECTION);
@@ -129,6 +130,7 @@ public class main {
         System.out.println("Pausing");
         int n = reader.nextInt();
         */
+
     }
     private static void printHelp(Options options){
         String header = "Run useful tests on PDFs\n\n";
