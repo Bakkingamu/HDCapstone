@@ -12,6 +12,7 @@ import java.io.IOException;
 
 import org.apache.pdfbox.*;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
+import org.apache.pdfbox.text.PDFTextStripper;
 
 public class PDFOperator {
     private PDDocument document;
@@ -33,6 +34,21 @@ public class PDFOperator {
     }
     public boolean producerMatch(String producer){
         return getInfo().getProducer().equals(producer);
+    }
+    public boolean hasText(){
+        String content = getText();
+        if(content.length() > 0)
+            return true;
+        else
+            return false;
+    }
+    public String getText(){
+        try{
+            PDFTextStripper stripper = new PDFTextStripper();
+            return stripper.getText(document);
+        }catch (IOException e){
+            return null;
+        }
     }
     //some getters
     public PDDocument getDocument(){
