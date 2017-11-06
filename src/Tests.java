@@ -1,19 +1,29 @@
+import com.google.cloud.vision.v1.*;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * Created by Justin on 10/4/2017.
+ * Modified by Nicolas on 11/5/2017:added SIGNATURE_TEST and associated private methods.
  */
 public class Tests {
+    public static int subImageWidth = 500;
+    public static int subImageHeight= 62;
+    public static int subImageDisplacement = 75;
     //list of digital producers for the documents ?perhaps read from a config later?
     public final static String digitalProducers[] = {"Smart Communications"};
     //optional overload requiring no verbose input
@@ -90,4 +100,150 @@ public class Tests {
         }
         //TODO-- more logs
     }
+
+    public static void SIGNATURE_TEST(String filename) throws IOException{
+        List<BufferedImage> pSigLocations = new ArrayList<>();
+        List<AnnotateImageResponse> responses = new ArrayList<>();
+        BufferedImage bim;
+        List<BufferedImage> bims;
+        VisionPackage pack;
+        BatchAnnotateImagesResponse response;
+
+        int i=0;
+        try {
+            PDDocument doc = PDDocument.load(new File(filename));
+            PDFOperator op = new PDFOperator(doc);
+            if(doc.getNumberOfPages() == 1 ) {
+                bim = op.renderImage();
+                pack = new VisionPackage(VisionPackage.createImageUsingBufImage(bim), Feature.Type.DOCUMENT_TEXT_DETECTION);
+                response = pack.sendAndReceive();
+                responses = response.getResponsesList();
+                pSigLocations = FindSignature(responses, bim);
+            } else {
+                bims = op.renderAll();
+                for(BufferedImage image: bims) {
+                    pack = new VisionPackage(VisionPackage.createImageUsingBufImage(image), Feature.Type.DOCUMENT_TEXT_DETECTION);
+                    response = pack.sendAndReceive();
+                    responses.addAll(response.getResponsesList());
+                }
+                pSigLocations = FindSignature(responses, bims);
+            }
+
+            int index=0;
+            for(BufferedImage image: pSigLocations){
+                if(CheckForSignature(image)){
+                    System.out.println("\nSignature location #"+index+" likely has a signature.");
+                }else{
+                    System.out.println("\nSignature location #"+index+" likely has a signature.");
+                }
+                index++;
+            }
+
+        } catch (IOException e){
+            //TODO : log error msg "file not found" or "could not load 'filename'"
+        }
+
+        return;
+    }//end SIGNATURE_TEST
+    private static List<BufferedImage> FindSignature(List<AnnotateImageResponse> responses, BufferedImage buf){
+        List<BufferedImage> possibleSignatures= new ArrayList<>();
+        List<Vertex> v;
+        BoundingPoly sigNearbyLocation;
+        int pageIndex = 0;
+        for (AnnotateImageResponse res : responses) {
+            if (res.hasError()) {
+                System.out.printf("Error: %s\n", res.getError().getMessage());
+            }
+            TextAnnotation annotation = res.getFullTextAnnotation();
+            for (Page page: annotation.getPagesList()) {
+                for (Block block : page.getBlocksList()) {
+                    for (Paragraph para : block.getParagraphsList()) {
+                        for (Word word: para.getWordsList()) {
+                            String wordText = "";
+                            for (Symbol symbol: word.getSymbolsList()) {
+                                wordText = wordText + symbol.getText();
+                            }//symbol
+                            if(wordText.contains("Signature")){
+                                sigNearbyLocation = word.getBoundingBox();
+                                System.out.println("signature text found on page "+pageIndex+".");
+                                System.out.println("at "+ sigNearbyLocation);
+                                v = sigNearbyLocation.getVerticesList();
+                                possibleSignatures.add(
+                                        buf.getSubimage(
+                                                v.get(0).getX(),
+                                                v.get(0).getY() - subImageDisplacement,
+                                                subImageWidth,
+                                                subImageHeight)
+                                );
+                                v.clear();
+                            }
+                        }//end word loop
+                    }//end paragraph loop
+                }//end block loop
+                pageIndex++;
+            }//end page loop
+        }//end responses loop
+        return possibleSignatures;
+    }//end findSignature(single image)
+
+    private static List<BufferedImage> FindSignature(List<AnnotateImageResponse> responses, List<BufferedImage> bufs){
+        List<BufferedImage> possibleSignatures= new ArrayList<>();
+        List<Vertex> v;
+        BoundingPoly sigNearbyLocation;
+        int pageIndex = 0;
+        for (AnnotateImageResponse res : responses) {
+            if (res.hasError()) {
+                System.out.printf("Error: %s\n", res.getError().getMessage());
+            }
+            TextAnnotation annotation = res.getFullTextAnnotation();
+            for (Page page: annotation.getPagesList()) {
+                for (Block block : page.getBlocksList()) {
+                    for (Paragraph para : block.getParagraphsList()) {
+                        for (Word word: para.getWordsList()) {
+                            String wordText = "";
+                            for (Symbol symbol: word.getSymbolsList()) {
+                                wordText = wordText + symbol.getText();
+                            }//symbol
+                            if(wordText.contains("Signature")){
+                                sigNearbyLocation = word.getBoundingBox();
+                                System.out.println("signature text found on page "+pageIndex+".");
+                                System.out.println("at "+ sigNearbyLocation);
+                                v = sigNearbyLocation.getVerticesList();
+                                possibleSignatures.add(
+                                        bufs.get(pageIndex).getSubimage(
+                                                v.get(0).getX(),
+                                                v.get(0).getY() - subImageDisplacement,
+                                                subImageWidth,
+                                                subImageHeight)
+                                );
+                            }
+                        }//end word loop
+                    }//end paragraph loop
+                }//end block loop
+                pageIndex++;
+            }//end page loop
+        }//end responses loop
+        return possibleSignatures;
+    }//end findSignature(multiple image)
+    private static Boolean CheckForSignature(BufferedImage bim){
+        int MAX_BLACK_VALUE = 382; //((255 * 3) / 2) rounded down
+        int blackPixels= 0;
+        System.out.println("Beginning signature check.");
+        for(int h = 0; h < bim.getHeight(); h++){
+            for(int w = 0; w < bim.getWidth(); w++){
+                Color c = new Color (bim.getRGB(w,h));
+                int red = c.getRed();
+                int green = c.getGreen();
+                int blue = c.getBlue();
+                if(red+green+blue <= MAX_BLACK_VALUE){
+                    blackPixels++;
+                    System.out.println("Counting sufficiently dark pixels...");
+                    System.out.print(blackPixels+" ");
+                    //if over 20% of the image is black pixels there is a high likelyhood of a signature.
+                    if(blackPixels >= bim.getWidth() * bim.getHeight() / 5){ return true;}
+                }
+            }
+        }//end for loop
+        return false;
+    }//end CheckForSignature
 }

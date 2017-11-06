@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Scanner;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.util.StatusPrinter;
@@ -35,17 +36,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.cli.*;
+//import org.apache.commons.cli.*;
 
 public class main {
     public enum INPUT{
         //enum used instead of bool for readability
         DIR, FILE
     }
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) throws IOException {
         // CLI Options
-        Options options = new Options();
+        /*Options options = new Options();
         //misc
         options.addOption("v", "verbose" , false, "Verbose - Log messages will be detailed"); //TODO-- Implement verbose
         //tests
@@ -109,13 +109,11 @@ public class main {
             printHelp(options);
             System.exit(1);
         }
-
-        /*
+*/
+        Tests.SIGNATURE_TEST("Complete HIA.pdf");
         PDFOperator op = new PDFOperator(PDDocument.load(new File("Complete HIA.pdf")));
         VisionPackage vp = new VisionPackage(VisionPackage.createImageUsingBufImage(op.renderImage()), Type.LABEL_DETECTION);
         vp.TestPrint();
-        */
-        /*
         //Post to log entries
         Logger logger = LoggerFactory.getLogger("LE");
         logger.debug("Hello world.");
@@ -129,13 +127,12 @@ public class main {
         Scanner reader = new Scanner(System.in);  // Reading from System.in
         System.out.println("Pausing");
         int n = reader.nextInt();
-        */
 
     }
-    private static void printHelp(Options options){
+   /* private static void printHelp(Options options){
         String header = "Run useful tests on PDFs\n\n";
         String footer = "\nKSU+HOMEDEPOT 2017";
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("PDFTest", header, options, footer, true);
-    }
+    }*/
 }

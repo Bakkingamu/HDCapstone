@@ -1,5 +1,6 @@
 /**
  * Created by Justin on 10/1/2017.
+ * Modified by Nicolas on 11/5/2017:overloaded constructor, addRequest, and CreateImageUsingBufImage  currently unused.
  */
 
 import com.google.auth.oauth2.GoogleCredentials;
@@ -17,6 +18,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +36,11 @@ public class VisionPackage {
         this();
         addRequest(image,type);
     }
+    //overloaded unused
+    public VisionPackage(List<Image> images, Type type) {
+        this();
+        addRequest(images,type);
+    }
     // Creates Client
     private void createConnection(){
         try {
@@ -48,6 +55,14 @@ public class VisionPackage {
         Feature feat = Feature.newBuilder().setType(t).build();
         AnnotateImageRequest request = AnnotateImageRequest.newBuilder().addFeatures(feat).setImage(i).build();
         requestPackage.add(request);
+    }
+    //overloaded unused
+    public void addRequest(List<Image> images, Type t){
+        Feature feat = Feature.newBuilder().setType(t).build();
+        for(Image image: images) {
+            AnnotateImageRequest request = AnnotateImageRequest.newBuilder().addFeatures(feat).setImage(image).build();
+            requestPackage.add(request);
+        }
     }
     // send all requests to Google and stores response
     public  void send(){
@@ -73,6 +88,22 @@ public class VisionPackage {
         ByteString imageByteString = ByteString.copyFrom(os.toByteArray());
         Image img = Image.newBuilder().setContent(imageByteString).build();
         return img;
+    }
+    //Overloaded method unused
+    public static List<Image> createImageUsingBufImage(List<BufferedImage> bims){
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        List<Image> imgs = new ArrayList<>();
+        for(BufferedImage buf: bims) {
+            try {
+                ImageIO.write(buf, "png", os);
+            } catch (IOException e) {
+                System.out.println("Couldn't convert buffered image to png"); //replace with logentries
+            }
+            ByteString imageByteString = ByteString.copyFrom(os.toByteArray());
+            Image img = Image.newBuilder().setContent(imageByteString).build();
+            imgs.add(img);
+        }
+        return imgs;
     }
     //print response (From google example)
     public void printResponse(BatchAnnotateImagesResponse response){
