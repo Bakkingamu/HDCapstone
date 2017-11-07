@@ -36,7 +36,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-//import org.apache.commons.cli.*;
+import org.apache.commons.cli.*;
 
 public class main {
     public enum INPUT{
@@ -45,11 +45,12 @@ public class main {
     }
     public static void main(String[] args) throws IOException {
         // CLI Options
-        /*Options options = new Options();
+        Options options = new Options();
         //misc
         options.addOption("v", "verbose" , false, "Verbose - Log messages will be detailed"); //TODO-- Implement verbose
         //tests
         options.addOption("s", "source-test", false, "Source Test - Runs \"Source Test\" to check if a document was scanned in or digital"); //TODO-- Implement source test in Tests.java
+        options.addOption("g", "signature-test", false, "Signature Test - Runs \"Signature Test\" to check if a document's signature box is filled"); //TODO-- Implement source test in Tests.java
         //input options
         options.addOption("i", "input-file", true, "Input File - Give this program a file to use");
         options.addOption("d", "directory", true, "Input Directory - Give this program a Directory to use"); //TODO-- Implement directory search
@@ -101,7 +102,13 @@ public class main {
                     default: break;
                 }
             }
-            // empty :(
+            if(cmd.hasOption("g")){
+                switch (inputMethod){
+                    case DIR: Tests.SIGNATURE_TEST_DIR(path, cmd.hasOption("v")); break;
+                    case FILE: Tests.SIGNATURE_TEST(path, cmd.hasOption("v")); break;
+                    default: break;
+                }
+            }
 
         }
         catch(ParseException e)
@@ -109,7 +116,6 @@ public class main {
             printHelp(options);
             System.exit(1);
         }
-*/
         Tests.SIGNATURE_TEST("Complete HIA.pdf");
         PDFOperator op = new PDFOperator(PDDocument.load(new File("Complete HIA.pdf")));
         VisionPackage vp = new VisionPackage(VisionPackage.createImageUsingBufImage(op.renderImage()), Type.LABEL_DETECTION);
@@ -129,10 +135,10 @@ public class main {
         int n = reader.nextInt();
 
     }
-   /* private static void printHelp(Options options){
+   private static void printHelp(Options options){
         String header = "Run useful tests on PDFs\n\n";
         String footer = "\nKSU+HOMEDEPOT 2017";
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("PDFTest", header, options, footer, true);
-    }*/
+    }
 }

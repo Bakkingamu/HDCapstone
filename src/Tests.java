@@ -24,9 +24,30 @@ public class Tests {
     public static int subImageWidth = 500;
     public static int subImageHeight= 62;
     public static int subImageDisplacement = 75;
-    //list of digital producers for the documents ?perhaps read from a config later?
+    //list of digital producers for the documents TODO--read from a config later
     public final static String digitalProducers[] = {"Smart Communications"};
-    //optional overload requiring no verbose input
+
+    //---SOURCE TEST
+    public static void SOURCE_TEST_DIR(String directoryname){
+        SOURCE_TEST_DIR(directoryname, false);
+    }
+    public static void SOURCE_TEST_DIR(String directoryname, boolean verbose){
+        Path currentPath = Paths.get(System.getProperty("user.dir"));
+        Path dir = Paths.get(currentPath.toString(), directoryname);
+        if(verbose)
+            System.out.println("Source testing directory - " + dir);
+        try(Stream<Path> paths = Files.walk(dir)){
+            List<String> files = paths.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
+            for(String s : files){
+                if(verbose)
+                    System.out.println("Starting source test on " + s);
+                SOURCE_TEST(s, verbose);
+            }
+        }catch (IOException e){
+
+        }
+        //TODO-- more logs
+    }
     public static boolean SOURCE_TEST(String filename){return SOURCE_TEST(filename, false);}
     public static boolean SOURCE_TEST(String filename, boolean verbose){
         float confidence = 0;
@@ -49,7 +70,6 @@ public class Tests {
             return false;
         }
     }
-
     public static boolean CONTENT_TEST(PDFOperator pdf){return CONTENT_TEST(pdf, false);}
     public static boolean CONTENT_TEST(PDFOperator pdf, boolean verbose){
         String content = pdf.getText().replaceAll("\\s+",""); //remove white space
@@ -58,8 +78,6 @@ public class Tests {
         }
         return (content.length() > 0);
     }
-
-    //META TEST - Checks metadata of document against list
     public static boolean META_TEST(PDFOperator pdf){return META_TEST(pdf, false);}
     public static boolean META_TEST(PDFOperator pdf, boolean verbose){
         boolean hit = false;
@@ -79,11 +97,12 @@ public class Tests {
         return hit;
         //TODO-- log entries
     }
-    //optional overload requiring no verbose input
-    public static void SOURCE_TEST_DIR(String directoryname){
-        SOURCE_TEST_DIR(directoryname, false);
+
+    //---SIGNATURE
+    public static void SIGNATURE_TEST_DIR(String directoryname){
+        SIGNATURE_TEST_DIR(directoryname, false);
     }
-    public static void SOURCE_TEST_DIR(String directoryname, boolean verbose){
+    public static void SIGNATURE_TEST_DIR(String directoryname, boolean verbose){
         Path currentPath = Paths.get(System.getProperty("user.dir"));
         Path dir = Paths.get(currentPath.toString(), directoryname);
         if(verbose)
@@ -93,15 +112,20 @@ public class Tests {
             for(String s : files){
                 if(verbose)
                     System.out.println("Starting source test on " + s);
-                SOURCE_TEST(s, verbose);
+                SIGNATURE_TEST(s, verbose);
             }
         }catch (IOException e){
 
         }
-        //TODO-- more logs
     }
+    public static void SIGNATURE_TEST(String filename){
+        try{
+            SIGNATURE_TEST(filename, false);
+        }catch (IOException e){
 
-    public static void SIGNATURE_TEST(String filename) throws IOException{
+        }
+    }
+    public static void SIGNATURE_TEST(String filename, boolean verbose) throws IOException{
         List<BufferedImage> pSigLocations = new ArrayList<>();
         List<AnnotateImageResponse> responses = new ArrayList<>();
         BufferedImage bim;
