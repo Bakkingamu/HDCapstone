@@ -133,10 +133,10 @@ public class Tests {
         VisionPackage pack;
         BatchAnnotateImagesResponse response;
 
-
         try {
             PDDocument doc = PDDocument.load(new File(filename));
             PDFOperator op = new PDFOperator(doc);
+
             if(doc.getNumberOfPages() == 1 ) {
                 bim = op.renderImage();
                 pack = new VisionPackage(VisionPackage.createImageUsingBufImage(bim), Feature.Type.DOCUMENT_TEXT_DETECTION);
@@ -156,9 +156,9 @@ public class Tests {
             int index=0;
             for(BufferedImage image: pSigLocations){
                 if(CheckForSignature(image)){
-                    System.out.println("\nSignature location #"+index+" likely does not have a signature.");
-                }else{
                     System.out.println("\nSignature location #"+index+" likely has a signature.");
+                }else{
+                    System.out.println("\nSignature location #"+index+" likely does not have a signature.");
                 }
                 index++;
             }
@@ -191,8 +191,7 @@ public class Tests {
                             if(wordText.contains("Signature")){
                                 sigIndex++;
                                 sigNearbyLocation = word.getBoundingBox();
-                                System.out.println("signature text found on page "+pageIndex+".");
-                                System.out.println("at "+ sigNearbyLocation);
+                                System.out.println("signature# "+sigIndex+" text found on page "+pageIndex+".");
                                 v = sigNearbyLocation.getVerticesList();
                                 possibleSignatures.add(
                                         buf.getSubimage(
