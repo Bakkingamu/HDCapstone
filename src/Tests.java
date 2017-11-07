@@ -168,7 +168,6 @@ public class Tests {
                                 sigIndex++;
                                 sigNearbyLocation = word.getBoundingBox();
                                 System.out.println("signature# "+sigIndex+" text found on page "+pageIndex+".");
-                                System.out.println("at "+ sigNearbyLocation);
                                 v = sigNearbyLocation.getVerticesList();
                                 possibleSignatures.add(
                                         buf.getSubimage(
@@ -210,7 +209,6 @@ public class Tests {
                             if(wordText.contains("Signature")){
                                 sigNearbyLocation = word.getBoundingBox();
                                 System.out.println("signature# "+sigIndex+" text found on page "+pageIndex+".");
-                                System.out.println("at "+ sigNearbyLocation);
                                 v = sigNearbyLocation.getVerticesList();
                                 possibleSignatures.add(
                                         bufs.get(pageIndex).getSubimage(
@@ -240,9 +238,10 @@ public class Tests {
                 int blue = c.getBlue();
                 if(red+green+blue <= MAX_BLACK_VALUE){
                     blackPixels++;
-                    System.out.print(blackPixels+" ");
                     //if over 20% of the image is black pixels there is a high likelyhood of a signature.
-                    if(blackPixels >= bim.getWidth() * bim.getHeight() / 5){ return true;}
+                    if(blackPixels >= bim.getWidth() * bim.getHeight() / 5){
+                        System.out.println(blackPixels/(bim.getWidth()*bim.getHeight()/5)+"% of subimage is composed of black pixels");
+                        return true;}
                 }
             }
         }//end for loop
