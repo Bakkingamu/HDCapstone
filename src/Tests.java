@@ -264,7 +264,7 @@ public class Tests {
                     blackPixels++;
                     //if over 20% of the image is black pixels there is a high likelyhood of a signature.
                     if(blackPixels >= bim.getWidth() * bim.getHeight() / 5){
-                        System.out.println(blackPixels/(bim.getWidth()*bim.getHeight()/5)+"% of subimage is composed of black pixels");
+                        //System.out.println(blackPixels/(bim.getWidth()*bim.getHeight()/5)+"% of subimage is composed of black pixels");
                         return true;}
                 }
             }
