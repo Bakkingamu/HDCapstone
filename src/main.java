@@ -116,6 +116,7 @@ public class main {
             printHelp(options);
             System.exit(1);
         }
+        /*
         Tests.SIGNATURE_TEST("Complete HIA.pdf");
         PDFOperator op = new PDFOperator(PDDocument.load(new File("Complete HIA.pdf")));
         VisionPackage vp = new VisionPackage(VisionPackage.createImageUsingBufImage(op.renderImage()), Type.LABEL_DETECTION);
@@ -133,7 +134,7 @@ public class main {
         Scanner reader = new Scanner(System.in);  // Reading from System.in
         System.out.println("Pausing");
         int n = reader.nextInt();
-
+        */
     }
    private static void printHelp(Options options){
         String header = "Run useful tests on PDFs\n\n";
