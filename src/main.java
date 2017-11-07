@@ -116,7 +116,6 @@ public class main {
             printHelp(options);
             System.exit(1);
         }
-        Tests.SIGNATURE_TEST("Complete HIA.pdf");
         PDFOperator op = new PDFOperator(PDDocument.load(new File("Complete HIA.pdf")));
         VisionPackage vp = new VisionPackage(VisionPackage.createImageUsingBufImage(op.renderImage()), Type.LABEL_DETECTION);
         vp.TestPrint();
