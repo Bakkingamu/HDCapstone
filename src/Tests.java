@@ -133,7 +133,7 @@ public class Tests {
         VisionPackage pack;
         BatchAnnotateImagesResponse response;
 
-        int i=0;
+
         try {
             PDDocument doc = PDDocument.load(new File(filename));
             PDFOperator op = new PDFOperator(doc);
@@ -156,7 +156,7 @@ public class Tests {
             int index=0;
             for(BufferedImage image: pSigLocations){
                 if(CheckForSignature(image)){
-                    System.out.println("\nSignature location #"+index+" likely has a signature.");
+                    System.out.println("\nSignature location #"+index+" likely does not have a signature.");
                 }else{
                     System.out.println("\nSignature location #"+index+" likely has a signature.");
                 }
@@ -174,6 +174,7 @@ public class Tests {
         List<Vertex> v;
         BoundingPoly sigNearbyLocation;
         int pageIndex = 0;
+        int sigIndex = 0;
         for (AnnotateImageResponse res : responses) {
             if (res.hasError()) {
                 System.out.printf("Error: %s\n", res.getError().getMessage());
@@ -188,6 +189,7 @@ public class Tests {
                                 wordText = wordText + symbol.getText();
                             }//symbol
                             if(wordText.contains("Signature")){
+                                sigIndex++;
                                 sigNearbyLocation = word.getBoundingBox();
                                 System.out.println("signature text found on page "+pageIndex+".");
                                 System.out.println("at "+ sigNearbyLocation);
@@ -215,6 +217,7 @@ public class Tests {
         List<Vertex> v;
         BoundingPoly sigNearbyLocation;
         int pageIndex = 0;
+        int sigIndex = 0;
         for (AnnotateImageResponse res : responses) {
             if (res.hasError()) {
                 System.out.printf("Error: %s\n", res.getError().getMessage());
@@ -230,8 +233,7 @@ public class Tests {
                             }//symbol
                             if(wordText.contains("Signature")){
                                 sigNearbyLocation = word.getBoundingBox();
-                                System.out.println("signature text found on page "+pageIndex+".");
-                                System.out.println("at "+ sigNearbyLocation);
+                                System.out.println("signature# "+sigIndex+" text found on page "+pageIndex+".");
                                 v = sigNearbyLocation.getVerticesList();
                                 possibleSignatures.add(
                                         bufs.get(pageIndex).getSubimage(
@@ -261,10 +263,10 @@ public class Tests {
                 int blue = c.getBlue();
                 if(red+green+blue <= MAX_BLACK_VALUE){
                     blackPixels++;
-                    System.out.println("Counting sufficiently dark pixels...");
-                    System.out.print(blackPixels+" ");
                     //if over 20% of the image is black pixels there is a high likelyhood of a signature.
-                    if(blackPixels >= bim.getWidth() * bim.getHeight() / 5){ return true;}
+                    if(blackPixels >= bim.getWidth() * bim.getHeight() / 5){
+                        System.out.println(blackPixels/(bim.getWidth()*bim.getHeight()/5)+"% of subimage is composed of black pixels");
+                        return true;}
                 }
             }
         }//end for loop
