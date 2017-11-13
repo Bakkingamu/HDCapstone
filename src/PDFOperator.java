@@ -63,7 +63,13 @@ public class PDFOperator {
         return bims;
     }
     public boolean producerMatch(String producer){
-        return getInfo().getProducer().equals(producer);
+        try{
+            return getInfo().getProducer().equals(producer);
+
+        }catch(NullPointerException e){
+            System.out.println("Producer is null");
+            return  false;
+        }
     }
     public boolean hasText(){
         String content = getText();

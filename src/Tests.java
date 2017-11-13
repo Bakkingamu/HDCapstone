@@ -5,8 +5,7 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.Buffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,9 +23,6 @@ public class Tests {
     public static int subImageWidth = 500;
     public static int subImageHeight= 62;
     public static int subImageDisplacement = 75;
-    //list of digital producers for the documents TODO--read from a config later
-    public final static String digitalProducers[] = {"Smart Communications"};
-
     //---SOURCE TEST
     public static void SOURCE_TEST_DIR(String directoryname){
         SOURCE_TEST_DIR(directoryname, false);
@@ -40,7 +36,7 @@ public class Tests {
             List<String> files = paths.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
             for(String s : files){
                 if(verbose)
-                    System.out.println("Starting source test on " + s);
+                    System.out.println("\nStarting source test on " + s);
                 SOURCE_TEST(s, verbose);
             }
         }catch (IOException e){
@@ -74,25 +70,50 @@ public class Tests {
     public static boolean CONTENT_TEST(PDFOperator pdf, boolean verbose){
         String content = pdf.getText().replaceAll("\\s+",""); //remove white space
         if (verbose) {
+
             System.out.println(content.length() + " characters in document");
         }
-        return (content.length() > 0);
+        if(content.length() > 300){
+            if(verbose)
+                System.out.println("Content test: 100%");
+            return true;
+        }
+        else{
+            double conf = content.length()/300.0;
+            if(verbose)
+                System.out.println("Content test: " + conf + "%");
+            return (conf > .5);
+        }
     }
     public static boolean META_TEST(PDFOperator pdf){return META_TEST(pdf, false);}
     public static boolean META_TEST(PDFOperator pdf, boolean verbose){
         boolean hit = false;
-        //checks the producer of the document against every producer in the list
-        for(String s : digitalProducers)
-        {
-            if(pdf.producerMatch(s))
-                hit = true;
+        try{
+            BufferedReader reader = new BufferedReader(new FileReader("cfg/producers.txt"));
+            String line = reader.readLine();
+            while(line != null){
+                if(pdf.producerMatch(line)){
+                    hit = true;
+                }
+                line = reader.readLine();
+            }
+            if(verbose){
+                if(hit)
+                    System.out.println("Document has digital metadata");
+                else
+                    System.out.println("Document has no digital metadata");
+            }
         }
-        //print result
-        if(verbose){
-            if(hit)
-                System.out.println("Document has digital metadata");
-            else
-                System.out.println("Document has no digital metadata");
+        catch (FileNotFoundException e)
+        {
+            System.out.println("Producer configuration file missing: cfg/producers.txt");
+            System.exit(1);
+        }
+        catch (IOException e)
+        {
+            System.out.println("IOException at META_TEST");
+            System.exit(1);
+
         }
         return hit;
         //TODO-- log entries
@@ -111,7 +132,7 @@ public class Tests {
             List<String> files = paths.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
             for(String s : files){
                 if(verbose)
-                    System.out.println("Starting source test on " + s);
+                    System.out.println("\nStarting source test on " + s);
                 SIGNATURE_TEST(s, verbose);
             }
         }catch (IOException e){
