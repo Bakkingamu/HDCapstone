@@ -44,6 +44,7 @@ public class main {
         DIR, FILE
     }
     public static void main(String[] args) throws IOException {
+        UserDiagnostics.initLog();
         // CLI Options
         Options options = new Options();
         //misc
@@ -75,7 +76,7 @@ public class main {
 
             // i and d conflict (either use input file OR directory)
             if(cmd.hasOption("i") == cmd.hasOption("d")){
-                System.out.println("ERROR: Please use one input method\n");
+                UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Please use one input method");// System.out.println("ERROR: Please use one input method\n");
                 printHelp(options);
                 System.exit(1);
             }
@@ -87,11 +88,16 @@ public class main {
             {
                 inputMethod = INPUT.FILE;
                 path = cmd.getOptionValue("i");
+                if(cmd.hasOption('v'))
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Using single file input");
+
             }
             else
             {
                 inputMethod = INPUT.DIR;
                 path = cmd.getOptionValue("d");
+                if(cmd.hasOption('v'))
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Using directory input");
             }
 
             //TESTS
@@ -116,25 +122,9 @@ public class main {
             printHelp(options);
             System.exit(1);
         }
-        /*
-        Tests.SIGNATURE_TEST("Complete HIA.pdf");
-        PDFOperator op = new PDFOperator(PDDocument.load(new File("Complete HIA.pdf")));
-        VisionPackage vp = new VisionPackage(VisionPackage.createImageUsingBufImage(op.renderImage()), Type.LABEL_DETECTION);
-        vp.TestPrint();
-        //Post to log entries
-        Logger logger = LoggerFactory.getLogger("LE");
-        logger.debug("Hello world.");
-
-        // print internal state
-        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        StatusPrinter.print(lc);
-
-
-        //pause system
         Scanner reader = new Scanner(System.in);  // Reading from System.in
-        System.out.println("Pausing");
+        System.out.println("\nPress Enter to Exit");
         int n = reader.nextInt();
-        */
     }
    private static void printHelp(Options options){
         String header = "Run useful tests on PDFs\n\n";

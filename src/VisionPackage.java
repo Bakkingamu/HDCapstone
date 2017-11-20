@@ -47,7 +47,9 @@ public class VisionPackage {
             vision = ImageAnnotatorClient.create();
         }
         catch (IOException e){
-            System.out.println("IOException at createConnection"); //replace with logentries
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Error establishing connection with Google Cloud - make sure GOOGLE_APPLICATION_CREDENTIALS system variable is set");
+            System.out.println("Error establishing connection with Google Cloud - make sure GOOGLE_APPLICATION_CREDENTIALS system variable is set");
+            System.exit(1);
         }
     }
     // add a request to the list
@@ -83,7 +85,9 @@ public class VisionPackage {
         try{
             ImageIO.write(bim,"png",os);
         }catch (IOException e){
-            System.out.println("Couldn't convert buffered image to png"); //replace with logentries
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Error converting buffered image to png");
+            System.out.println("Error converting buffered image to png");
+            System.exit(1);
         }
         ByteString imageByteString = ByteString.copyFrom(os.toByteArray());
         Image img = Image.newBuilder().setContent(imageByteString).build();
@@ -97,7 +101,9 @@ public class VisionPackage {
             try {
                 ImageIO.write(buf, "png", os);
             } catch (IOException e) {
-                System.out.println("Couldn't convert buffered image to png"); //replace with logentries
+                UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Error converting buffered image to png");
+                System.out.println("Error converting buffered image to png");
+                System.exit(1);
             }
             ByteString imageByteString = ByteString.copyFrom(os.toByteArray());
             Image img = Image.newBuilder().setContent(imageByteString).build();

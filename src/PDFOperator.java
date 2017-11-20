@@ -30,6 +30,8 @@ public class PDFOperator {
             bim = pdfRenderer.renderImageWithDPI(0,300, ImageType.RGB);
         }catch (IOException e){
             System.out.println("IOException at PDF Image conversion");
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "IOException at PDF Image conversion");
+            System.exit(1);
             bim =  new BufferedImage(256, 256,BufferedImage.TYPE_INT_RGB);
 
         }
@@ -42,6 +44,8 @@ public class PDFOperator {
             bim = pdfRenderer.renderImageWithDPI(page,300, ImageType.RGB);
         }catch (IOException e){
             System.out.println("IOException at PDF Image conversion");
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "IOException at PDF Image conversion");
+            System.exit(1);
             bim =  new BufferedImage(256, 256,BufferedImage.TYPE_INT_RGB);
 
         }
@@ -56,6 +60,8 @@ public class PDFOperator {
                 bims.add(i, pdfRenderer.renderImageWithDPI(i, 300, ImageType.RGB));
             } catch (IOException e) {
                 System.out.println("IOException at PDF Image conversion");
+                UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "IOException at PDF Image conversion");
+                System.exit(1);
                 bims.add(i, new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB));
 
             }
@@ -67,7 +73,6 @@ public class PDFOperator {
             return getInfo().getProducer().equals(producer);
 
         }catch(NullPointerException e){
-            System.out.println("Producer is null");
             return  false;
         }
     }

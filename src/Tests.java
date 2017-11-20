@@ -23,6 +23,7 @@ public class Tests {
     public static int subImageWidth = 500;
     public static int subImageHeight= 62;
     public static int subImageDisplacement = 75;
+
     //---SOURCE TEST
     public static void SOURCE_TEST_DIR(String directoryname){
         SOURCE_TEST_DIR(directoryname, false);
@@ -30,22 +31,27 @@ public class Tests {
     public static void SOURCE_TEST_DIR(String directoryname, boolean verbose){
         Path currentPath = Paths.get(System.getProperty("user.dir"));
         Path dir = Paths.get(currentPath.toString(), directoryname);
-        if(verbose)
-            System.out.println("Source testing directory - " + dir);
+        if(verbose){
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Source testing directory [\'" + dir + "\']");
+            System.out.println("Source testing directory [\'" + dir + "\']");
+
+        }
         try(Stream<Path> paths = Files.walk(dir)){
             List<String> files = paths.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
             for(String s : files){
-                if(verbose)
-                    System.out.println("\nStarting source test on " + s);
                 SOURCE_TEST(s, verbose);
             }
         }catch (IOException e){
-
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Couldn't open directory [\'" + directoryname + "\']");
+            System.out.println("Couldn't open directory [\'" + directoryname + "\']");
+            e.printStackTrace();
+            System.exit(1);
         }
-        //TODO-- more logs
     }
     public static boolean SOURCE_TEST(String filename){return SOURCE_TEST(filename, false);}
     public static boolean SOURCE_TEST(String filename, boolean verbose){
+        UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Source Test - [\'" + filename + "\']");
+        System.out.println("\n----[SOURCE TEST]---- \n[\'" + filename + "\']");
         float confidence = 0;
         PDFOperator pdf;
         try{
@@ -56,13 +62,17 @@ public class Tests {
             if(CONTENT_TEST(pdf,verbose))
                 confidence += 100;
             confidence /= 2f;
-            if(verbose)
-                System.out.println("Digital confidence level - " + confidence + "%");
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "[\'" + filename + "\'] - Digital confidence level - " + confidence + "%");
+            System.out.println("[\'" + filename + "\'] - Digital confidence level - " + confidence + "%");
             doc.close();
             return true;
         }
         catch (IOException e)
         {
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Couldn't open file [\'" + filename + "\']");
+            System.out.println("Couldn't open file [\'" + filename + "\']");
+            e.printStackTrace();
+            System.exit(1);
             return false;
         }
     }
@@ -70,18 +80,23 @@ public class Tests {
     public static boolean CONTENT_TEST(PDFOperator pdf, boolean verbose){
         String content = pdf.getText().replaceAll("\\s+",""); //remove white space
         if (verbose) {
-
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, content.length() + " characters in document");
             System.out.println(content.length() + " characters in document");
         }
         if(content.length() > 300){
-            if(verbose)
-                System.out.println("Content test: 100%");
+            if(verbose){
+                UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Content test: 100%");
+                System.out.println("Content test - 100%");
+            }
             return true;
         }
         else{
             double conf = content.length()/300.0;
-            if(verbose)
-                System.out.println("Content test: " + conf + "%");
+            if(verbose){
+                UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Content test: " + conf + "%");
+                System.out.println("Content test - " + conf + "%");
+
+            }
             return (conf > .5);
         }
     }
@@ -98,25 +113,32 @@ public class Tests {
                 line = reader.readLine();
             }
             if(verbose){
-                if(hit)
-                    System.out.println("Document has digital metadata");
-                else
-                    System.out.println("Document has no digital metadata");
+                if(hit){
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "MetaData test: 100%");
+                    System.out.println("MetaData test - 100%");
+                }
+                else{
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "MetaData test: 0%");
+                    System.out.println("MetaData test - 0%");
+                }
             }
         }
         catch (FileNotFoundException e)
         {
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Producer configuration file missing: cfg/producers.txt");
             System.out.println("Producer configuration file missing: cfg/producers.txt");
+            e.printStackTrace();
             System.exit(1);
         }
         catch (IOException e)
         {
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "IOException at META_TEST");
             System.out.println("IOException at META_TEST");
+            e.printStackTrace();
             System.exit(1);
 
         }
         return hit;
-        //TODO-- log entries
     }
 
     //---SIGNATURE
@@ -126,17 +148,20 @@ public class Tests {
     public static void SIGNATURE_TEST_DIR(String directoryname, boolean verbose){
         Path currentPath = Paths.get(System.getProperty("user.dir"));
         Path dir = Paths.get(currentPath.toString(), directoryname);
-        if(verbose)
-            System.out.println("Source testing directory - " + dir);
+        if(verbose){
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Signature testing directory [\'" + dir + "\']");
+            System.out.println("Signature  testing directory [\'" + dir + "\']");
+
+        }
         try(Stream<Path> paths = Files.walk(dir)){
             List<String> files = paths.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
             for(String s : files){
-                if(verbose)
-                    System.out.println("\nStarting source test on " + s);
                 SIGNATURE_TEST(s, verbose);
             }
         }catch (IOException e){
-
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Couldn't open directory [\'" + directoryname + "\']");
+            System.out.println("Couldn't open directory [\'" + directoryname + "\']");
+            e.printStackTrace();
         }
     }
     public static void SIGNATURE_TEST(String filename){
@@ -147,6 +172,10 @@ public class Tests {
         }
     }
     public static void SIGNATURE_TEST(String filename, boolean verbose) throws IOException{
+        if(verbose){
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Signature Test -  [\'" + filename + "\']");
+            System.out.println("\n----[SIGNATURE TEST]---- \n[\'" + filename + "\']");
+        }
         List<BufferedImage> pSigLocations = new ArrayList<>();
         List<AnnotateImageResponse> responses = new ArrayList<>();
         BufferedImage bim;
@@ -177,15 +206,20 @@ public class Tests {
             int index=0;
             for(BufferedImage image: pSigLocations){
                 if(CheckForSignature(image)){
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "\nSignature location #"+index+" likely has a signature.");
                     System.out.println("\nSignature location #"+index+" likely has a signature.");
                 }else{
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "\nSignature location #"+index+" likely does not have a signature.");
                     System.out.println("\nSignature location #"+index+" likely does not have a signature.");
                 }
                 index++;
             }
 
         } catch (IOException e){
-            //TODO : log error msg "file not found" or "could not load 'filename'"
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Couldn't open file [\'" + filename + "\']");
+            System.out.println("Couldn't open file [\'" + filename + "\']");
+            e.printStackTrace();
+            System.exit(1);
         }
 
         return;
