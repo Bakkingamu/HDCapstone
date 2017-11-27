@@ -224,6 +224,69 @@ public class Tests {
 
         return;
     }//end SIGNATURE_TEST
+    public static void BATCH_SIGNATURE_TEST(String filename, boolean verbose) throws IOException{
+        if(verbose){
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Signature Test -  [\'" + filename + "\']");
+            System.out.println("\n----[SIGNATURE TEST]---- \n[\'" + filename + "\']");
+        }
+        List<BufferedImage> pSigLocations = new ArrayList<>();
+        List<AnnotateImageResponse> responses = new ArrayList<>();
+        BufferedImage bim;
+        List<BufferedImage> bims;
+        VisionPackage pack;
+        BatchAnnotateImagesResponse response;
+        List<AnnotateImageRequest> requests;
+
+        try {
+            PDDocument doc = PDDocument.load(new File(filename));
+            PDFOperator op = new PDFOperator(doc);
+
+            if(doc.getNumberOfPages() == 1 ) {
+                bim = op.renderImage();
+                pack = new VisionPackage(VisionPackage.createImageUsingBufImage(bim), Feature.Type.DOCUMENT_TEXT_DETECTION);
+                response = pack.sendAndReceive();
+                responses = response.getResponsesList();
+                pSigLocations = FindSignature(responses, bim);
+            } else {
+                bims = op.renderAll();
+                for(BufferedImage image: bims) {
+                    Image img = VisionPackage.createImageUsingBufImage(image);
+                    AnnotateImageRequest request =
+                            AnnotateImageRequest.newBuilder().addFeatures(Feature.Type.DOCUMENT_TEXT_DETECTION).setImage(img).build();
+                    requests.add(request);
+                    /*pack = new VisionPackage(VisionPackage.createImageUsingBufImage(image), Feature.Type.DOCUMENT_TEXT_DETECTION);
+                    response = pack.sendAndReceive();
+                    responses.addAll(response.getResponsesList());*/
+                }
+                try (ImageAnnotatorClient client = ImageAnnotatorClient.create()){
+                    response = client.batchAnnotateImages(requests);
+                    responses = response.getResponsesList();
+                    client.close();
+                }
+                pSigLocations = FindSignature(responses, bims);
+            }
+
+            int index=0;
+            for(BufferedImage image: pSigLocations){
+                if(CheckForSignature(image)){
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "\nSignature location #"+index+" likely has a signature.");
+                    System.out.println("\nSignature location #"+index+" likely has a signature.");
+                }else{
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "\nSignature location #"+index+" likely does not have a signature.");
+                    System.out.println("\nSignature location #"+index+" likely does not have a signature.");
+                }
+                index++;
+            }
+
+        } catch (IOException e){
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Couldn't open file [\'" + filename + "\']");
+            System.out.println("Couldn't open file [\'" + filename + "\']");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        return;
+    }//end SIGNATURE_TEST
     private static List<BufferedImage> FindSignature(List<AnnotateImageResponse> responses, BufferedImage buf){
         List<BufferedImage> possibleSignatures= new ArrayList<>();
         List<Vertex> v;
