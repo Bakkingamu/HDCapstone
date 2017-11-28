@@ -1,4 +1,5 @@
 import com.google.cloud.vision.v1.*;
+import com.google.cloud.vision.v1.Image;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 
@@ -224,7 +225,7 @@ public class Tests {
 
         return;
     }//end SIGNATURE_TEST
-    public static void BATCH_SIGNATURE_TEST(String filename, boolean verbose) throws IOException{
+    public static void BATCH_SIGNATURE_TEST(String filename, boolean verbose) throws Exception {
         if(verbose){
             UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Signature Test -  [\'" + filename + "\']");
             System.out.println("\n----[SIGNATURE TEST]---- \n[\'" + filename + "\']");
@@ -235,7 +236,7 @@ public class Tests {
         List<BufferedImage> bims;
         VisionPackage pack;
         BatchAnnotateImagesResponse response;
-        List<AnnotateImageRequest> requests;
+        List<AnnotateImageRequest> requests = new ArrayList<>();
 
         try {
             PDDocument doc = PDDocument.load(new File(filename));
@@ -251,8 +252,9 @@ public class Tests {
                 bims = op.renderAll();
                 for(BufferedImage image: bims) {
                     Image img = VisionPackage.createImageUsingBufImage(image);
+                    Feature feat = Feature.newBuilder().setType(Feature.Type.DOCUMENT_TEXT_DETECTION).build();
                     AnnotateImageRequest request =
-                            AnnotateImageRequest.newBuilder().addFeatures(Feature.Type.DOCUMENT_TEXT_DETECTION).setImage(img).build();
+                            AnnotateImageRequest.newBuilder().addFeatures(feat).setImage(img).build();
                     requests.add(request);
                     /*pack = new VisionPackage(VisionPackage.createImageUsingBufImage(image), Feature.Type.DOCUMENT_TEXT_DETECTION);
                     response = pack.sendAndReceive();
