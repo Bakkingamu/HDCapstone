@@ -21,9 +21,9 @@ import java.util.stream.Stream;
  * Modified by Nicolas on 11/5/2017:added SIGNATURE_TEST and associated private methods.
  */
 public class Tests {
-    public static int subImageWidth = 500;
+    public static int subImageWidth = 400;
     public static int subImageHeight= 62;
-    public static int subImageDisplacement = 75;
+    public static int subImageDisplacement = 60;
 
     //---SOURCE TEST
     public static void SOURCE_TEST_DIR(String directoryname){
