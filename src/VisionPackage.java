@@ -47,8 +47,9 @@ public class VisionPackage {
             vision = ImageAnnotatorClient.create();
         }
         catch (IOException e){
-            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Error establishing connection with Google Cloud - make sure GOOGLE_APPLICATION_CREDENTIALS system variable is set");
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Application exception, Error establishing connection with Google Cloud - GOOGLE_APPLICATION_CREDENTIALS probably not set");
             System.out.println("Error establishing connection with Google Cloud - make sure GOOGLE_APPLICATION_CREDENTIALS system variable is set");
+            e.printStackTrace();
             System.exit(1);
         }
     }
@@ -85,8 +86,9 @@ public class VisionPackage {
         try{
             ImageIO.write(bim,"jpg",os);
         }catch (IOException e){
-            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Error converting buffered image to png");
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Application exception, Error converting buffered image to png");
             System.out.println("Error converting buffered image to png");
+            e.printStackTrace();
             System.exit(1);
         }
         ByteString imageByteString = ByteString.copyFrom(os.toByteArray());
@@ -101,8 +103,9 @@ public class VisionPackage {
             try {
                 ImageIO.write(buf, "jpg", os);
             } catch (IOException e) {
-                UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Error converting buffered image to png");
+                UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Application exception, Error converting buffered image to png");
                 System.out.println("Error converting buffered image to png");
+                e.printStackTrace();
                 System.exit(1);
             }
             ByteString imageByteString = ByteString.copyFrom(os.toByteArray());

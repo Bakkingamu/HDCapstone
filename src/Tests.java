@@ -33,9 +33,7 @@ public class Tests {
         Path currentPath = Paths.get(System.getProperty("user.dir"));
         Path dir = Paths.get(currentPath.toString(), directoryname);
         if(verbose){
-            UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Source testing directory [\'" + dir + "\']");
             System.out.println("Source testing directory [\'" + dir + "\']");
-
         }
         try(Stream<Path> paths = Files.walk(dir)){
             List<String> files = paths.filter(Files::isRegularFile).map(Path::toString).collect(Collectors.toList());
@@ -43,7 +41,7 @@ public class Tests {
                 SOURCE_TEST(s, verbose);
             }
         }catch (IOException e){
-            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Couldn't open directory [\'" + directoryname + "\']");
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Application exception, couldn't open directory [\'" + directoryname + "\']");
             System.out.println("Couldn't open directory [\'" + directoryname + "\']");
             e.printStackTrace();
             System.exit(1);
@@ -51,26 +49,26 @@ public class Tests {
     }
     public static boolean SOURCE_TEST(String filename){return SOURCE_TEST(filename, false);}
     public static boolean SOURCE_TEST(String filename, boolean verbose){
-        UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Source Test - [\'" + filename + "\']");
-        System.out.println("\n----[SOURCE TEST]---- \n[\'" + filename + "\']");
-        float confidence = 0;
+        UserDiagnostics.logActivity(UserDiagnostics.Constants.START_TEST, "\'Starting source test\' filename:\'" + filename + "\'");
+        System.out.println("\n----[SOURCE TEST]----");
+        float confidence = 0f;
         PDFOperator pdf;
         try{
             PDDocument doc = PDDocument.load(new File(filename));
             pdf = new PDFOperator(doc);
             if(META_TEST(pdf,verbose))
-                confidence += 100;
+                confidence += 100f;
             if(CONTENT_TEST(pdf,verbose))
-                confidence += 100;
+                confidence += 100f;
             confidence /= 2f;
-            UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "[\'" + filename + "\'] - Digital confidence level - " + confidence + "%");
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.SOURCE_TEST_COMPLETE, "\'Finished Test\' filename:\'" + filename + "\' confidence:\'" + confidence + "\'");
             System.out.println("[\'" + filename + "\'] - Digital confidence level - " + confidence + "%");
             doc.close();
             return true;
         }
         catch (IOException e)
         {
-            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Couldn't open file [\'" + filename + "\']");
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "\'Application Exception, Couldn't open file [\'" + filename + "\']\'");
             System.out.println("Couldn't open file [\'" + filename + "\']");
             e.printStackTrace();
             System.exit(1);
@@ -80,29 +78,30 @@ public class Tests {
     public static boolean CONTENT_TEST(PDFOperator pdf){return CONTENT_TEST(pdf, false);}
     public static boolean CONTENT_TEST(PDFOperator pdf, boolean verbose){
         String content = pdf.getText().replaceAll("\\s+",""); //remove white space
+        UserDiagnostics.logActivity(UserDiagnostics.Constants.START_TEST, "\'Starting content sub-test\'");
         if (verbose) {
-            UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, content.length() + " characters in document");
-            System.out.println(content.length() + " characters in document");
+            System.out.println("Starting content sub-test");
         }
         if(content.length() > 300){
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.CONTENT_SUB_TEST_COMPLETE, "\'Finished content sub-test\' confidence:\'100.0\'");
             if(verbose){
-                UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Content test: 100%");
                 System.out.println("Content test - 100%");
             }
             return true;
         }
         else{
             double conf = content.length()/300.0;
+            conf *= 100;
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.CONTENT_SUB_TEST_COMPLETE, "\'Finished content sub-test\' confidence:\'"+ conf +"\'");
             if(verbose){
-                UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Content test: " + conf + "%");
                 System.out.println("Content test - " + conf + "%");
-
             }
             return (conf > .5);
         }
     }
     public static boolean META_TEST(PDFOperator pdf){return META_TEST(pdf, false);}
     public static boolean META_TEST(PDFOperator pdf, boolean verbose){
+        UserDiagnostics.logActivity(UserDiagnostics.Constants.START_TEST, "\'Starting metadata sub-test\'");
         boolean hit = false;
         try{
             BufferedReader reader = new BufferedReader(new FileReader("cfg/producers.txt"));
@@ -113,28 +112,28 @@ public class Tests {
                 }
                 line = reader.readLine();
             }
-            if(verbose){
                 if(hit){
-                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "MetaData test: 100%");
-                    System.out.println("MetaData test - 100%");
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.METADATA_SUB_TEST_COMPLETE, "\'Finished metadata sub-test\' confidence:\'100.0\'");
+                    if(verbose)
+                        System.out.println("MetaData test - 100%");
                 }
                 else{
-                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "MetaData test: 0%");
-                    System.out.println("MetaData test - 0%");
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.METADATA_SUB_TEST_COMPLETE, "\'Finished metadata sub-test\' confidence:\'0.0\'");
+                    if(verbose)
+                        System.out.println("MetaData test - 0%");
                 }
-            }
         }
         catch (FileNotFoundException e)
         {
-            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Producer configuration file missing: cfg/producers.txt");
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Application Exception, Producer configuration file missing - cfg/producers.txt");
             System.out.println("Producer configuration file missing: cfg/producers.txt");
             e.printStackTrace();
             System.exit(1);
         }
         catch (IOException e)
         {
-            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "IOException at META_TEST");
-            System.out.println("IOException at META_TEST");
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Application Exception, Unknown IOException at META_TEST");
+            System.out.println("Application exception, Unknown IOException at META_TEST");
             e.printStackTrace();
             System.exit(1);
 

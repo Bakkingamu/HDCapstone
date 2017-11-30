@@ -9,7 +9,7 @@ import ch.qos.logback.core.util.StatusPrinter;
  */
 
 public class UserDiagnostics {
-
+    private static String session_id = null;
     private static UserDiagnostics instance = null;
     protected static Logger logger = null;
     protected UserDiagnostics() {
@@ -32,6 +32,7 @@ public class UserDiagnostics {
 
     public static void initLog()
     {
+        session_id = Long.toString(System.currentTimeMillis());
         if(instance == null) {
             instance = new UserDiagnostics();
         }
@@ -47,7 +48,7 @@ public class UserDiagnostics {
         {
             // Emoticon and log message
             String userid = "no user";
-            logger.info("em:\'" + em + "\' message=" + lm + " action:\'" + UserDiagnostics.emojitoWord(em) + "' userid:\'" + userid.toUpperCase() +"\'");
+            logger.info("em:\'" + em + "\' message=" + lm + " action:\'" + UserDiagnostics.emojitoWord(em) + "' sessionid:\'" + session_id +"\'");
         }else{
             System.out.println("Logger is null");
         }
@@ -57,6 +58,16 @@ public class UserDiagnostics {
 
 
     public static final class Constants {
+
+        public static final String SOURCE_TEST_COMPLETE = "📄";
+
+        public static final String SIGNATURE_TEST_COMPLETE = "📝";
+
+        public static final String CONTENT_SUB_TEST_COMPLETE = "🏧";
+
+        public static final String METADATA_SUB_TEST_COMPLETE = "💌";
+
+        public static final String START_TEST = "🔍";
 
         public static final String MEMORY_WARNING = "🐷";
 
@@ -133,6 +144,11 @@ public class UserDiagnostics {
     {
         switch (emoticonKey)
         {
+            case "📄": return "SOURCE_TEST_COMPLETE";
+            case "📝": return "SIGNATURE_TEST_COMPLETE";
+            case "🏧": return "CONTENT_SUB_TEST_COMPLETE";
+            case "💌": return "METADATA_SUB_TEST_COMPLETE";
+            case "🔍": return "START_TEST";
             case "🐷": return "MEMORY_WARNING";
             case "🐤": return "APPLICATION_START";
             case "📱": return "DEVICE";

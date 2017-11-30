@@ -1,42 +1,11 @@
 /**
  * Created by Justin on 9/12/2017.
  */
-import com.google.auth.Credentials;
-//log entries
-import org.apache.pdfbox.pdmodel.PDDocumentInformation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.Scanner;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.core.util.StatusPrinter;
-//pdf
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.rendering.ImageType;
-import org.apache.pdfbox.rendering.PDFRenderer;
-import java.io.File;
-import org.apache.pdfbox.*;
-// Google Cloud
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.vision.v1.AnnotateImageRequest;
-import com.google.cloud.vision.v1.AnnotateImageResponse;
-import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
-import com.google.cloud.vision.v1.EntityAnnotation;
-import com.google.cloud.vision.v1.Feature;
-import com.google.cloud.vision.v1.Feature.Type;
-import com.google.cloud.vision.v1.Image;
-import com.google.cloud.vision.v1.ImageAnnotatorClient;
-import com.google.protobuf.ByteString;
-import javax.imageio.ImageIO;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.commons.cli.*;
+import java.util.Arrays;
 
 public class main {
     public enum INPUT{
@@ -45,16 +14,17 @@ public class main {
     }
     public static void main(String[] args) throws IOException {
         UserDiagnostics.initLog();
+        UserDiagnostics.logActivity(UserDiagnostics.Constants.APPLICATION_START, "\'Starting application with the settings( " + Arrays.toString(args) +" )\'");
         // CLI Options
         Options options = new Options();
         //misc
-        options.addOption("v", "verbose" , false, "Verbose - Log messages will be detailed"); //TODO-- Implement verbose
+        options.addOption("v", "verbose" , false, "Verbose - Log messages will be detailed");
         //tests
-        options.addOption("s", "source-test", false, "Source Test - Runs \"Source Test\" to check if a document was scanned in or digital"); //TODO-- Implement source test in Tests.java
-        options.addOption("g", "signature-test", false, "Signature Test - Runs \"Signature Test\" to check if a document's signature box is filled"); //TODO-- Implement source test in Tests.java
+        options.addOption("s", "source-test", false, "Source Test - Runs \"Source Test\" to check if a document was scanned in or digital");
+        options.addOption("g", "signature-test", false, "Signature Test - Runs \"Signature Test\" to check if a document's signature box is filled");
         //input options
         options.addOption("i", "input-file", true, "Input File - Give this program a file to use");
-        options.addOption("d", "directory", true, "Input Directory - Give this program a Directory to use"); //TODO-- Implement directory search
+        options.addOption("d", "directory", true, "Input Directory - Give this program a Directory to use");
         options.addOption("r", "recursive", false, "Recursive - enable checking of sub-folders if using directory input"); //TODO-- Implement recursion
         //HELP ME
         options.addOption("h", "help", false, "show this message");
@@ -76,7 +46,8 @@ public class main {
 
             // i and d conflict (either use input file OR directory)
             if(cmd.hasOption("i") == cmd.hasOption("d")){
-                UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Please use one input method");// System.out.println("ERROR: Please use one input method\n");
+                UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "\'Application closing - One input method music be selected\'");
+                System.out.println("ERROR, Please use one input method\n");
                 printHelp(options);
                 System.exit(1);
             }
@@ -88,8 +59,9 @@ public class main {
             {
                 inputMethod = INPUT.FILE;
                 path = cmd.getOptionValue("i");
-                if(cmd.hasOption('v'))
-                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Using single file input");
+                if(cmd.hasOption('v')){
+                    System.out.println("Using single file input");
+                }
 
             }
             else
@@ -97,7 +69,7 @@ public class main {
                 inputMethod = INPUT.DIR;
                 path = cmd.getOptionValue("d");
                 if(cmd.hasOption('v'))
-                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Using directory input");
+                    System.out.println("Using directory input");
             }
 
             //TESTS
@@ -111,19 +83,12 @@ public class main {
             if(cmd.hasOption("g")){
                 switch (inputMethod){
                     case DIR: Tests.SIGNATURE_TEST_DIR(path, cmd.hasOption("v")); break;
-                    case FILE: Tests.SIGNATURE_TEST(path, cmd.hasOption("v"));
-                        //try {
-                        //Tests.BATCH_SIGNATURE_TEST(path, cmd.hasOption("v"));
-                        /*}
-                        catch(Exception e){
-                            System.out.println("Exception encountered.");
-                            e.printStackTrace();
-                            System.exit(1);
-                        }*/ break;
+                    case FILE: Tests.SIGNATURE_TEST(path, cmd.hasOption("v")); break;
                     default: break;
                 }
             }
-
+            if(cmd.hasOption('v'))
+                UserDiagnostics.logActivity(UserDiagnostics.Constants.APPLICATION_TERMINATE, "\'Finished Processing\'");
         }
         catch(ParseException e)
         {
