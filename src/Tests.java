@@ -406,7 +406,7 @@ public class Tests {
                 if(red+green+blue <= MAX_BLACK_VALUE){
                     blackPixels++;
                     //if over 20% of the image is black pixels there is a high likelyhood of a signature.
-                    if(blackPixels >= colorTarget){return true;}
+                    if(blackPixels >= colorTarget){containsSignature= true;}
                 }
             }
         }//end for loop
@@ -417,7 +417,6 @@ public class Tests {
         //TODO   update logging
         System.out.println(f + "% of subimage is composed of black pixels");
         System.out.println(confidence+"% confidence thats a signature exists");
-        if(containsSignature) return true;
-        else return false;
+        return containsSignature;
     }//end CheckForSignature
 }
