@@ -172,9 +172,9 @@ public class Tests {
         }
     }
     public static void SIGNATURE_TEST(String filename, boolean verbose) throws IOException{
+        UserDiagnostics.logActivity(UserDiagnostics.Constants.START_TEST, "\'Starting Signature test\' filename:\'" + filename + "\'");
         if(verbose){
-            UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "Signature Test -  [\'" + filename + "\']");
-            System.out.println("\n----[SIGNATURE TEST]---- \n[\'" + filename + "\']");
+            System.out.println("\n----[SIGNATURE TEST]----");
         }
         List<BufferedImage> pSigLocations = new ArrayList<>();
         List<AnnotateImageResponse> responses = new ArrayList<>();
@@ -206,17 +206,17 @@ public class Tests {
             int index=0;
             for(BufferedImage image: pSigLocations){
                 if(CheckForSignature(image)){
-                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "\nSignature location #"+index+" 75% confidence of the presence of a signature.");
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.SIGNATURE_TEST_COMPLETE, "\'Signature location #"+index+" 75% confidence of the presence of a signature.\' confidence:\'75\'");
                     System.out.println("\nSignature location #"+index+" 75% confidence of the presence of a signature.");
                 }else{
-                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "\nSignature location #"+index+" likely does not have a signature.");
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.SIGNATURE_TEST_COMPLETE, "\'Signature location #"+index+" 0% confidence of the presence of a signature.\' confidence:\'0\'");
                     System.out.println("\nSignature location #"+index+" likely does not have a signature.");
                 }
                 index++;
             }
 
         } catch (IOException e){
-            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Couldn't open file [\'" + filename + "\']");
+            UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Application exception, couldn't open file [\'" + filename + "\']");
             System.out.println("Couldn't open file [\'" + filename + "\']");
             e.printStackTrace();
             System.exit(1);
@@ -412,13 +412,12 @@ public class Tests {
             }
         }//end for loop
         float f = (float) blackPixels / (float) imageArea;
-        float confidence = (blackPixels - colorTarget) / colorTarget;
-        confidence *= 100;
-        confidence += 75;
+        float confidence = (float)(blackPixels) / (float)colorTarget;
+        confidence *= 75;
         f *= 100;
         //TODO   update logging
         System.out.println(f + "% of subimage is composed of black pixels");
-        System.out.println(confidence+"% confidence in result");
+        System.out.println(confidence+"% confidence thats a signature exists");
         if(containsSignature) return true;
         else return false;
     }//end CheckForSignature
