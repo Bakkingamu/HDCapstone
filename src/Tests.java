@@ -319,7 +319,6 @@ public class Tests {
                                                 subImageWidth,
                                                 subImageHeight)
                                 );
-                                v.clear();
                             }
                         }//end word loop
                     }//end paragraph loop
