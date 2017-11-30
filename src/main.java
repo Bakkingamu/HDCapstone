@@ -111,7 +111,15 @@ public class main {
             if(cmd.hasOption("g")){
                 switch (inputMethod){
                     case DIR: Tests.SIGNATURE_TEST_DIR(path, cmd.hasOption("v")); break;
-                    case FILE: Tests.SIGNATURE_TEST(path, cmd.hasOption("v")); break;
+                    case FILE: Tests.SIGNATURE_TEST(path, cmd.hasOption("v"));
+                        //try {
+                        //Tests.BATCH_SIGNATURE_TEST(path, cmd.hasOption("v"));
+                        /*}
+                        catch(Exception e){
+                            System.out.println("Exception encountered.");
+                            e.printStackTrace();
+                            System.exit(1);
+                        }*/ break;
                     default: break;
                 }
             }

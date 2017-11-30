@@ -68,6 +68,23 @@ public class PDFOperator {
         }
         return bims;
     }
+    public List<BufferedImage> renderBatch(int batchSize, int index){
+        int pages = document.getNumberOfPages();
+        PDFRenderer pdfRenderer = new PDFRenderer(document);
+        List<BufferedImage> bims = new ArrayList<BufferedImage>();
+        for(int i = index; i< batchSize; i++) {
+            try {
+                bims.add(i, pdfRenderer.renderImageWithDPI(i, 300, ImageType.RGB));
+            } catch (IOException e) {
+                System.out.println("IOException at PDF Image conversion");
+                UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "IOException at PDF Image conversion");
+                System.exit(1);
+                bims.add(i, new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB));
+
+            }
+        }
+        return bims;
+    }
     public boolean producerMatch(String producer){
         try{
             return getInfo().getProducer().equals(producer);

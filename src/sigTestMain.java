@@ -14,9 +14,9 @@ public class sigTestMain {
     private int MAX_BLACK_VALUE = 382; // ((255 * 3) / 2) rounded down
     public static void main(String[] args) throws IOException {
         List<AnnotateImageResponse> responses = new ArrayList();
-        PDDocument doc = PDDocument.load(new File("HS 299 Fencing Agreement.pdf"));
+        PDDocument doc = PDDocument.load(new File("image.pdf"));
         PDFOperator op = new PDFOperator(doc);
-        BufferedImage buf = op.renderImage(0);
+        BufferedImage buf = op.renderImage();
         VisionPackage pack = new VisionPackage(VisionPackage.createImageUsingBufImage(buf), Feature.Type.DOCUMENT_TEXT_DETECTION);
         BatchAnnotateImagesResponse response = pack.sendAndReceive();
         responses = response.getResponsesList();
@@ -43,13 +43,9 @@ public class sigTestMain {
                                 System.out.println("signature text found.");
                                 System.out.println("at "+ sigNearbyLocation);
                                 v = sigNearbyLocation.getVerticesList();
-                                pSigLocations.add(
-                                        buf.getSubimage(
-                                                v.get(i).getX(),
-                                                v.get(i).getY() - 75,
-                                                500,
-                                                62)
-                                );
+                                int height = v.get(3).getY() - v.get(0).getY();
+                                int width = v.get(1).getX() - v.get(0).getX();
+                                pSigLocations.add(searchForSigBox(buf, v.get(0), height, width));
                                 //Image cropping testing
                                 try{
                                     File outputFile = new File(i+"saved.png");
@@ -77,8 +73,9 @@ public class sigTestMain {
     private static Boolean CheckForSignature(BufferedImage bim){
         int MAX_BLACK_VALUE = 382; //((255 * 3) / 2) rounded down
         int blackPixels= 0;
+        int imageArea = 3 * bim.getWidth();
         System.out.println("Beginning signature check.");
-        for(int h = 0; h < bim.getHeight(); h++){
+        for(int h = bim.getHeight()/3; h < bim.getHeight(); h += h){
             for(int w = 0; w < bim.getWidth(); w++){
                 Color c = new Color (bim.getRGB(w,h));
                 int red = c.getRed();
@@ -86,12 +83,129 @@ public class sigTestMain {
                 int blue = c.getBlue();
                 if(red+green+blue <= MAX_BLACK_VALUE){
                     blackPixels++;
-                    System.out.print(blackPixels+" ");
-                    //if over 20% of the image is black pixels there is a high likelyhood of a signature.
-                    if(blackPixels >= bim.getWidth() * bim.getHeight() / 5){ return true;}
+                    //if over 20% of the image is black pixels there is a high likelihood of a signature.
+                    if(blackPixels >= bim.getWidth() / 10) return true;
                 }
+
             }
         }//end for loop
+        System.out.print(blackPixels +" black pixels in an Area of "+ imageArea+"Pixels");
         return false;
     }//end CheckForSignature
+    private static BufferedImage searchForSigBox(BufferedImage bim, Vertex v, int h, int w){
+        int MAX_BLACK_VALUE = 382; //((255 * 3) / 2) rounded down
+        int NOT_WHITE_VALUE =615; //wild guess
+        int red;
+        int blue;
+        int green;
+        int colorValue = 0;
+        int Xpos = v.getX();
+        int Ypos = v.getY();
+        Color currentPixel = new Color(bim.getRGB(Xpos, Ypos));
+        red = currentPixel.getRed();
+        blue = currentPixel.getBlue();
+        green = currentPixel.getGreen();
+        colorValue = red+green+blue;
+
+            //Searching above signature until we hit NOT white space.(bottom of the box).==================bottom=======
+            while (colorValue > NOT_WHITE_VALUE){
+                Ypos--;
+                currentPixel = new Color(bim.getRGB(Xpos, Ypos));
+                red = currentPixel.getRed();
+                blue = currentPixel.getBlue();
+                green = currentPixel.getGreen();
+                colorValue = red+green+blue;
+            }
+            //going until we reach the other side of the bottom border of the box.=========================bottom=======
+            while (colorValue < NOT_WHITE_VALUE){
+                Ypos--;
+                currentPixel = new Color(bim.getRGB(Xpos, Ypos));
+                red = currentPixel.getRed();
+                blue = currentPixel.getBlue();
+                green = currentPixel.getGreen();
+                colorValue = red+green+blue;
+            }
+
+            /*Ypos++;
+            currentPixel = new Color(bim.getRGB(Xpos, Ypos));
+            red = currentPixel.getRed();
+            blue = currentPixel.getBlue();
+            green = currentPixel.getGreen();
+            colorValue = red+green+blue;*/
+            //Searching to the left until we hit white space.(bottom left corner of the box).=========BOTTOM LEFT CORNER
+            /*while (colorValue < NOT_WHITE_VALUE){
+                Xpos--;
+                currentPixel = new Color(bim.getRGB(Xpos, Ypos));
+                red = currentPixel.getRed();
+                blue = currentPixel.getBlue();
+                green = currentPixel.getGreen();
+                colorValue = red+green+blue;
+                offPixel = new Color(bim.getRGB(Xpos, Ypos-1));
+                red = offPixel.getRed();
+                blue = offPixel.getBlue();
+                green = offPixel.getGreen();
+                anchorColor = red+blue+green;
+            }
+            Xpos++;
+            anchorX = Xpos;
+            currentPixel = new Color(bim.getRGB(Xpos, Ypos));
+            red = currentPixel.getRed();
+            blue = currentPixel.getBlue();
+            green = currentPixel.getGreen();
+            colorValue = red+green+blue;
+            offPixel = new Color(bim.getRGB(Xpos, Ypos-1));
+            red = offPixel.getRed();
+            blue = offPixel.getBlue();
+            green = offPixel.getGreen();
+            anchorColor = red+blue+green;
+            //Searching up until we hit white space(top left corner of the box).=========================TOP LEFT CORNER
+            while(colorValue == NOT_WHITE_VALUE){
+                Ypos--;
+                height++;
+                currentPixel = new Color(bim.getRGB(Xpos, Ypos));
+                red = currentPixel.getRed();
+                blue = currentPixel.getBlue();
+                green = currentPixel.getGreen();
+                colorValue = red+green+blue;
+                offPixel = new Color(bim.getRGB(Xpos+1, Ypos));
+                red = offPixel.getRed();
+                blue = offPixel.getBlue();
+                green = offPixel.getGreen();
+                anchorColor = red+blue+green;
+            }
+            Ypos++;
+            anchorY = Ypos;
+            currentPixel = new Color(bim.getRGB(Xpos, Ypos));
+            red = currentPixel.getRed();
+            blue = currentPixel.getBlue();
+            green = currentPixel.getGreen();
+            colorValue = red+green+blue;
+            offPixel = new Color(bim.getRGB(Xpos+1, Ypos));
+            red = offPixel.getRed();
+            blue = offPixel.getBlue();
+            green = offPixel.getGreen();
+            anchorColor = red+blue+green;
+            //Searching right until we hit white space(top right corner of the box).====================TOP RIGHT CORNER
+            while(colorValue < NOT_WHITE_VALUE){
+                Xpos++;
+                width++;
+                currentPixel = new Color(bim.getRGB(Xpos, Ypos));
+                red = currentPixel.getRed();
+                blue = currentPixel.getBlue();
+                green = currentPixel.getGreen();
+                colorValue = red+green+blue;
+                offPixel = new Color(bim.getRGB(Xpos, Ypos+1));
+                red = offPixel.getRed();
+                blue = offPixel.getBlue();
+                green = offPixel.getGreen();
+                anchorColor = red+blue+green;
+            }*/
+
+        return bim.getSubimage(
+                Xpos,
+                Ypos-h,
+                w,
+                h);
+
+    }
 }

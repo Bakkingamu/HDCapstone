@@ -207,8 +207,8 @@ public class Tests {
             int index=0;
             for(BufferedImage image: pSigLocations){
                 if(CheckForSignature(image)){
-                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "\nSignature location #"+index+" likely has a signature.");
-                    System.out.println("\nSignature location #"+index+" likely has a signature.");
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "\nSignature location #"+index+" 75% confidence of the presence of a signature.");
+                    System.out.println("\nSignature location #"+index+" 75% confidence of the presence of a signature.");
                 }else{
                     UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "\nSignature location #"+index+" likely does not have a signature.");
                     System.out.println("\nSignature location #"+index+" likely does not have a signature.");
@@ -270,9 +270,9 @@ public class Tests {
 
             int index=0;
             for(BufferedImage image: pSigLocations){
-                if(CheckForSignature(image)){
-                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "\nSignature location #"+index+" likely has a signature.");
-                    System.out.println("\nSignature location #"+index+" likely has a signature.");
+                if(CheckForSignature(image)){//=========================================UPDATE REPORTING CHECK THE "CHECKSIGNATURE METHODS
+                    UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "\nSignature location #"+index+" 75% confidence of the presence of a signature.");
+                    System.out.println("\nSignature location #"+index+" 75% confidence of the presence of a signature.");
                 }else{
                     UserDiagnostics.logActivity(UserDiagnostics.Constants.INTERESTING_EVENT, "\nSignature location #"+index+" likely does not have a signature.");
                     System.out.println("\nSignature location #"+index+" likely does not have a signature.");
@@ -311,7 +311,7 @@ public class Tests {
                             if(wordText.contains("Signature")){
                                 sigIndex++;
                                 sigNearbyLocation = word.getBoundingBox();
-                                System.out.println("signature# "+sigIndex+" text found on page "+pageIndex+".");
+                                System.out.println("signature text found on page "+pageIndex+".");
                                 v = sigNearbyLocation.getVerticesList();
                                 possibleSignatures.add(
                                         buf.getSubimage(
@@ -328,6 +328,17 @@ public class Tests {
                 pageIndex++;
             }//end page loop
         }//end responses loop
+        try{
+            int i= 0;
+            for(BufferedImage image: possibleSignatures) {
+                File outputFile = new File(i + "subimage.png");
+                ImageIO.write(possibleSignatures.get(i), "png", outputFile);
+                i++;
+            }
+        }catch (IOException e){
+            System.out.println("Couldn't get I/O");
+            System.exit(1);
+        }
         return possibleSignatures;
     }//end findSignature(single image)
 
@@ -352,7 +363,7 @@ public class Tests {
                             }//symbol
                             if(wordText.contains("Signature")){
                                 sigNearbyLocation = word.getBoundingBox();
-                                System.out.println("signature# "+sigIndex+" text found on page "+pageIndex+".");
+                                System.out.println("signature text found on page "+pageIndex+".");
                                 v = sigNearbyLocation.getVerticesList();
                                 possibleSignatures.add(
                                         bufs.get(pageIndex).getSubimage(
@@ -368,11 +379,25 @@ public class Tests {
                 pageIndex++;
             }//end page loop
         }//end responses loop
+        try{
+            int i= 0;
+            for(BufferedImage image: possibleSignatures) {
+                File outputFile = new File(i + "subimage.png");
+                ImageIO.write(possibleSignatures.get(i), "png", outputFile);
+                i++;
+            }
+        }catch (IOException e){
+            System.out.println("Couldn't get I/O");
+            System.exit(1);
+        }
         return possibleSignatures;
     }//end findSignature(multiple image)
     private static Boolean CheckForSignature(BufferedImage bim){
         int MAX_BLACK_VALUE = 382; //((255 * 3) / 2) rounded down
         int blackPixels= 0;
+        int imageArea = bim.getWidth() * bim.getHeight();
+        int colorTarget = imageArea / 10;
+        Boolean containsSignature = false;
         System.out.println("Beginning signature check.");
         for(int h = 0; h < bim.getHeight(); h++){
             for(int w = 0; w < bim.getWidth(); w++){
@@ -383,12 +408,19 @@ public class Tests {
                 if(red+green+blue <= MAX_BLACK_VALUE){
                     blackPixels++;
                     //if over 20% of the image is black pixels there is a high likelyhood of a signature.
-                    if(blackPixels >= bim.getWidth() * bim.getHeight() / 5){
-                        //System.out.println(blackPixels/(bim.getWidth()*bim.getHeight()/5)+"% of subimage is composed of black pixels");
-                        return true;}
+                    if(blackPixels >= colorTarget){return true;}
                 }
             }
         }//end for loop
-        return false;
+        float f = (float) blackPixels / (float) imageArea;
+        float confidence = (blackPixels - colorTarget) / colorTarget;
+        confidence *= 100;
+        confidence += 75;
+        f *= 100;
+        //TODO   update logging
+        System.out.println(f + "% of subimage is composed of black pixels");
+        System.out.println(confidence+"% confidence in result");
+        if(containsSignature) return true;
+        else return false;
     }//end CheckForSignature
 }

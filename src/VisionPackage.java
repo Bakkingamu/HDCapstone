@@ -83,7 +83,7 @@ public class VisionPackage {
     public static Image createImageUsingBufImage(BufferedImage bim){
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         try{
-            ImageIO.write(bim,"png",os);
+            ImageIO.write(bim,"jpg",os);
         }catch (IOException e){
             UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Error converting buffered image to png");
             System.out.println("Error converting buffered image to png");
@@ -99,7 +99,7 @@ public class VisionPackage {
         List<Image> imgs = new ArrayList<>();
         for(BufferedImage buf: bims) {
             try {
-                ImageIO.write(buf, "png", os);
+                ImageIO.write(buf, "jpg", os);
             } catch (IOException e) {
                 UserDiagnostics.logActivity(UserDiagnostics.Constants.FORCE_CRASH, "Error converting buffered image to png");
                 System.out.println("Error converting buffered image to png");
