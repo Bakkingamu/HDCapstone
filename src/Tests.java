@@ -405,7 +405,7 @@ public class Tests {
                 int blue = c.getBlue();
                 if(red+green+blue <= MAX_BLACK_VALUE){
                     blackPixels++;
-                    //if over 20% of the image is black pixels there is a high likelihood of a signature.
+                    //if over 10% of the image is black pixels there is a high likelihood of a signature.
                     if(blackPixels >= colorTarget){containsSignature= true;}
                 }
             }
