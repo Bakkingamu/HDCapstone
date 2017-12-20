@@ -25,7 +25,6 @@ public class main {
         //input options
         options.addOption("i", "input-file", true, "Input File - Give this program a file to use");
         options.addOption("d", "directory", true, "Input Directory - Give this program a Directory to use");
-        options.addOption("r", "recursive", false, "Recursive - enable checking of sub-folders if using directory input"); //TODO-- Implement recursion
         //HELP ME
         options.addOption("h", "help", false, "show this message");
 
